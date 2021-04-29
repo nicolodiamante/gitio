@@ -1,0 +1,163 @@
+#
+# gitio — Shorten GitHub URLs.
+#
+
+gitio() {
+  # Use colors (if you can call them so).
+  if [[ -t 1 ]]; then
+    BOLD=$(printf '\033[1m')
+    RESET=$(printf '\033[m')
+  else
+    BOLD=""
+    RESET=""
+  fi
+
+  # Check if any parameters are given, then get URL from git config if present.
+  if [[ "$#" -eq 0 && -s ".git/config" ]]; then
+    GIT_CONFIG_URL="$(cat .git/config | grep "url" | awk '{print $3}')"
+  fi
+
+  # Checks if URL contains http(s).
+  if [[ -n "$GIT_CONFIG_URL" ]]; then
+    local URL="${GIT_CONFIG_URL}"
+  elif [[ ! "$1" =~ ^(http|https)://github.com/ ]]; then
+    local URL="https://github.com/${1}"
+  else
+    local URL="${1}"
+  fi
+
+  # Checks for any parameter, or show help.
+  if [[ "$#" -eq 0 && -z "$GIT_CONFIG_URL" ]]; then
+    echo 'gitio: no URL specified!'
+    echo "gitio: for more information see 'gitio --help'"
+    return 0
+  fi
+
+  # Show `help` message.
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    <<EOF
+Usage: gitio [options] URL vanity-name
+Shorten, squeeze, change GitHub URLs using curl.
+
+  -o, --open        opens the URL in the default browser
+  -r, --retrieve    retrieves the complete URL from the shortened URL
+  -h, --help        display this help and exit
+
+Examples:
+  gitio https://github.com/username/repo vanity-name  => https://git.io/vanity-name
+  gitio username/repo vanity-name                     => https://git.io/vanity-name
+  gitio -r https://git.io/vanity-name                 => https://github.com/username/repo
+
+Note: your vanity-name can only contain lowercase letters, numbers
+and dashes. If 'gitio' is launched inside a git repository it will
+search for the URL within the config file. However, you should make
+sure to be inside a git repo or otherwise provide the URL and the
+vanity-name. It's even possible to just type the username and repo
+name instead of the whole URL (see examples above).
+
+Report any translation bugs to <https://github.com/nicolodiamante/gitio/issues/>
+Full documentation <https://github.com/nicolodiamante/gitio/>
+EOF
+    return 0
+  fi
+
+  # Retrieves the complete URL from the shortened URL.
+  if [[ "$1" == "-r" || "$1" == "--retrieve" ]]; then
+    if [[ -n "$2" && "$2" =~ ^(http|https)://git.io/ ]]; then
+
+      # Grep the `Location: headers` of the URL that was fetched last.
+      local GITHUB_URL="$(curl -w '%{url_effective}' -s -o /dev/null "$2")"
+
+      # Checks the status of the URL given.
+      HTTP_CODE_STATUS="$(curl -w '%{http_code}' -s -o /dev/null "$2")"
+
+      if [[ -n "$2" && "$HTTP_CODE_STATUS" -eq 200 && -n "$GITHUB_URL" ]]; then
+        # Copy to clipboard if possible.
+        case "$OSTYPE" in
+          darwin*)  echo "${GITHUB_URL}" | pbcopy ;;
+          linux*)   echo "${GITHUB_URL}" | xclip -selection c ;;
+        esac
+        # Prints the source URL.
+        echo "gitio: source: ${GITHUB_URL}"
+        echo 'gitio: URL copied to clipboard!'
+        return 0
+      else
+        echo 'gitio: URL using bad/illegal format or missing URL'
+        return 1
+      fi
+    elif [[ "$2" =~ ^(http|https)://git && "$HTTP_CODE_STATUS" -eq 200 ]]; then
+        echo 'gitio: only allowed git.io URL!'
+        return 1
+    else
+        echo 'gitio: URL using bad/illegal format or missing URL'
+        return 1
+    fi
+  fi
+
+  # Open in the default browser.
+  if [[ "$1" == "-o" || "$1" == "--open" ]]; then
+    if [[ -n "$2" && "$2" =~ ^(http|https)://github.com/ || \
+                     "$2" =~ ^(http|https)://git.io/ ]]; then
+
+      if [[ "$HTTP_CODE_STATUS" -eq 200 ]]; then
+        # Open the URL in the browser.
+        case "$OSTYPE" in
+          darwin*) open "$2" ;;
+          linux*)  xdg-open "$2" ;;
+          *)       python -m webbrowser "$2" ;;
+        esac
+        return 0
+      else
+        echo 'gitio: cannot open URL in the browser!'
+        return 1
+      fi
+    else
+      echo 'gitio: URL using bad/illegal format or missing URL'
+      return 1
+    fi
+  fi
+
+  # Checks if the vanity name is valid.
+  if [[ -n "$2" ]]; then
+    local VANITY="$(echo "$2" | tr "[:upper:]" "[:lower:]")"
+
+    if [[ ! "$VANITY" =~ ^[0-9a-z\-]+$ ]]; then
+      echo "gitio: ${BOLD}${2}${RESET} invalid characters!"
+      return 1
+    fi
+  fi
+
+  # Make the request to git.io
+  if [[ "$1" =~ ^(http|https)://github.com/ ]]; then
+    # Checks if URL is valid before send the request to git.io
+    local URL_CODE_STATUS="$(curl -w '%{http_code}' -s -o /dev/null "$URL")"
+
+    if [[ -n "$URL" && "$URL_CODE_STATUS" -eq 200 && -n "$VANITY" ]]; then
+      local REQUEST="$(curl -is https://git.io/ -F "url=$URL" -F "code=$VANITY")"
+    elif [[ -n "$URL" && "$URL_CODE_STATUS" -eq 200 ]]; then
+      local REQUEST="$(curl -is https://git.io/ -F "url=$URL")"
+    else
+      echo 'gitio: check the URL provided is correct'
+      echo 'gitio: can not connect to the server'
+      return 1
+    fi
+  else
+    echo 'gitio: URL using bad/illegal format or missing URL'
+    return 1
+  fi
+
+  # Get the shortened URL.
+  local GITIO_URL="$(echo "$REQUEST" | awk '/^Location/ {print $2}')"
+
+  # Copy to clipboard if possible.
+  if [[ -n "$GITIO_URL" ]]; then
+    case "$OSTYPE" in
+      darwin*)  echo "${GITIO_URL}" | pbcopy ;;
+      linux*)   echo "${GITIO_URL}" | xclip -selection c ;;
+    esac
+
+    # Prints the shortened URL.
+    echo "gitio: URL shortened: ${GITIO_URL}"
+    echo 'gitio: URL copied to clipboard!'
+  fi
+}
