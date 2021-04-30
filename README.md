@@ -18,7 +18,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/nicolodiamante/gitio/HEAD/
 Alternatively, clone manually:
 
 ```shell
-git clone https://github.com/nicolodiamante/gitio.git ~
+git clone https://github.com/nicolodiamante/gitio.git ~/gitio
 ```
 
 Head over into the directory and then:
