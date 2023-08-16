@@ -1,9 +1,9 @@
 #!/bin/sh
 
 # Determines the current user's shell.
-[[ "$(basename -- "$SHELL")" == "zsh" ]] || exit 1
+[[ "$SHELL" == */zsh ]] || exit 1
 
-SOURCE=https://github.com/nicolodiamante/gitio
+SOURCE="https://github.com/nicolodiamante/gitio"
 TARBALL="${SOURCE}/tarball/master"
 TARGET="${HOME}/gitio"
 TAR_CMD="tar -xzv -C "${TARGET}" --strip-components 1 --exclude .gitignore"
@@ -11,7 +11,7 @@ TAR_CMD="tar -xzv -C "${TARGET}" --strip-components 1 --exclude .gitignore"
 INSTALL=./utils/install.sh
 
 is_executable() {
-  type "$1" > /dev/null 2>&1
+  command -v "$1" > /dev/null 2>&1
 }
 
 # Checks which executable is available then downloads and installs.
@@ -27,5 +27,11 @@ if [[ -z "$CMD" ]]; then
   echo 'No git, curl or wget available. Aborting!'
 else
   echo 'Installing gitio...'
-  mkdir -p "${TARGET}" && eval "${CMD}" && cd "${TARGET}" && source "${INSTALL}"
+  mkdir -p "$TARGET"
+
+  if eval "$CMD"; then
+    cd "$TARGET" && source "$INSTALL"
+  else
+    echo "Installation failed. Aborting!"
+  fi
 fi
