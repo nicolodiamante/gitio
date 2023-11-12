@@ -1,17 +1,25 @@
-#!/bin/sh
+#!/bin/zsh
+
+#
+# Start gitio Installation.
+#
 
 # Determines the current user's shell.
-[[ "$SHELL" == */zsh ]] || exit 1
+if [[ "$SHELL" != */zsh ]]; then
+  echo "Please switch to zsh shell to continue."
+  exit 1
+fi
 
+# Defines the PATHs.
 SOURCE="https://github.com/nicolodiamante/gitio"
 TARBALL="${SOURCE}/tarball/master"
 TARGET="${HOME}/gitio"
-TAR_CMD="tar -xzv -C "${TARGET}" --strip-components 1 --exclude .gitignore"
-
+TAR_CMD="tar -xzv -C \"${TARGET}\" --strip-components 1 --exclude .gitignore"
 INSTALL=./utils/install.sh
 
+# Check if a command is executable.
 is_executable() {
-  command -v "$1" > /dev/null 2>&1
+  command -v "$1" &> /dev/null
 }
 
 # Checks which executable is available then downloads and installs.
@@ -21,17 +29,31 @@ elif is_executable "curl"; then
   CMD="curl -L ${TARBALL} | ${TAR_CMD}"
 elif is_executable "wget"; then
   CMD="wget --no-check-certificate -O - ${TARBALL} | ${TAR_CMD}"
+else
+  echo 'No git, curl, or wget available. Aborting!'
+  exit 1
 fi
 
-if [[ -z "$CMD" ]]; then
-  echo 'No git, curl or wget available. Aborting!'
-else
-  echo 'Installing gitio...'
-  mkdir -p "$TARGET"
+echo 'Installing gitio...'
 
-  if eval "$CMD"; then
-    cd "$TARGET" && source "$INSTALL"
+# Create the target directory and proceed with the chosen download method.
+if ! mkdir -p "${TARGET}"; then
+  echo "Error: Failed to create target directory. Aborting!" >&2
+  exit 1
+fi
+
+# Execute the download command and run the installation script.
+if eval "${CMD}"; then
+  if cd "${TARGET}"; then
+    if ! source "${INSTALL}"; then
+      echo "Error: Failed to run the install script. Aborting!" >&2
+      exit 1
+    fi
   else
-    echo "Installation failed. Aborting!"
+    echo "Error: Failed to navigate to ${TARGET}. Aborting!" >&2
+    exit 1
   fi
+else
+  echo "Download failed. Aborting!" >&2
+  exit 1
 fi

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 
 #
 # Install gitio
@@ -6,25 +6,47 @@
 
 # Determines the current user's shell, if not `zsh` then exit.
 if [[ "$(basename -- "$SHELL")" != "zsh" ]]; then
-  echo "Please switch to zsh shell to continue."
+  echo "Please switch to zsh shell to continue." >&2
   exit 1
 fi
 
 # Defines the PATHs.
-SCRIPT="${HOME}/gitio/script"
-ZSHRC="${ZDOTDIR:-${XDG_CONFIG_HOME/zsh:-$HOME}}/.zshrc"
+SCRIPT_DIR="$(dirname "$0")"
+SCRIPT="${SCRIPT_DIR}/script"
 
-if [[ -d "$SCRIPT" && -f "$ZSHRC" ]]; then
-# Append the necessary lines to zshrc.
-cat << EOF >> ${ZSHRC}
-# gitio
-fpath=(~/gitio/script \$fpath)
+# Defines the PATH for the .zshrc.
+ZSHRC="${XDG_CONFIG_HOME:-$HOME}/.zshrc"
+
+# Check for SCRIPT directory.
+if [[ ! -d "$SCRIPT" ]]; then
+  echo 'zsh: gitio script directory not found!' >&2
+  exit 1
+fi
+
+# Backup .zshrc before updating.
+if [[ -f "$ZSHRC" ]]; then
+  BACKUP="${ZSHRC}.bak_$(date +%F-%H%M%S)"
+  if ! cp "${ZSHRC}" "${BACKUP}"; then
+    echo "Failed to backup .zshrc." >&2
+    exit 1
+  fi
+elif [[ ! -f "$ZSHRC" ]]; then
+  echo "# Creating a new .zshrc file" > "${ZSHRC}"
+  echo "New .zshrc file created."
+fi
+
+# Update .zshrc with gitio path if not already present.
+if ! grep -q "fpath=(${HOME}/gitio/script" "${ZSHRC}"; then
+  cat << EOF >> "${ZSHRC}"
+
+# gitio path.
+fpath=(${HOME}/gitio/script \$fpath)
 autoload -Uz gitio
 EOF
-  echo 'zsh: appended gitio to zshrc.'
-
-  # Reloads shell.
-  source "${ZSHRC}"
+  echo "Appended gitio's necessary lines to .zshrc"
 else
-  echo 'zsh: zshrc not found!'
+  echo "gitio's lines are already present in .zshrc" >&2
 fi
+
+# Reminder for the user.
+echo "Please reload your zsh shell or open a new terminal session to apply changes."

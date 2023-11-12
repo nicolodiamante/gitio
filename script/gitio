@@ -35,29 +35,25 @@ gitio() {
 
   # Shows `help` message.
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    <<EOF
-Usage: gitio [options] URL vanity-name
-Shorten, squeeze, change GitHub URLs using curl.
-
-  -o, --open        opens the URL in the default browser
-  -r, --retrieve    retrieves the complete URL from the shortened URL
-  -h, --help        display this help and exit
-
-Examples:
-  gitio https://github.com/username/repo vanity-name  => https://git.io/vanity-name
-  gitio username/repo vanity-name                     => https://git.io/vanity-name
-  gitio -r https://git.io/vanity-name                 => https://github.com/username/repo
-
-Note: your vanity-name can only contain lowercase letters, numbers
-and dashes. If 'gitio' is launched inside a git repository it will
-search for the URL within the config file. However, you should make
-sure to be inside a git repo or otherwise provide the URL and the
-vanity-name. It's even possible to just type the username and repo
-name instead of the whole URL (see examples above).
-
-Report any translation bugs to <https://github.com/nicolodiamante/gitio/issues/>
-Full documentation <https://github.com/nicolodiamante/gitio/>
-EOF
+    echo "Shorten, squeeze, or modify GitHub URLs using curl."
+    echo "Usage: gitio [OPTION] <URL> <vanity-name>"
+    echo "Options:"
+    echo "  -o, --open        Open the URL in the default browser."
+    echo "  -r, --retrieve    Retrieve the full URL from a shortened git.io link."
+    echo "  -h, --help        Display this help message and exit."
+    echo ""
+    echo "Examples:"
+    echo "  gitio https://github.com/username/repo vanity-name  => shortens to https://git.io/vanity-name"
+    echo "  gitio username/repo vanity-name                     => shortens to https://git.io/vanity-name"
+    echo "  gitio -r https://git.io/vanity-name                 => expands to https://github.com/username/repo"
+    echo ""
+    echo "Notes:"
+    echo "  - Vanity names can only contain lowercase letters, numbers, and dashes."
+    echo "  - Inside a git repository, 'gitio' will use the URL from the config file."
+    echo "  - Outside a git repo, provide both the URL and the vanity-name."
+    echo "  - You can also use just the username and repo name instead of the full URL."
+    echo ""
+    echo "For full documentation, visit: https://github.com/nicolodiamante/gitio"
     return 0
   fi
 
