@@ -8,12 +8,16 @@
 Git URLs can become cumbersome due to the long file names, leading to lengthy and often messy URLs that can be difficult to read. This can be particularly problematic when sharing URLs via email or social media. To address this issue, this plugin has been developed to use curl to shorten URLs, inspired by a similar service offered by GitHub called [Git.io][gitio]. The use of shortened URLs can not only improve readability but also make sharing URLs more convenient and efficient. This plugin allows users to enjoy the benefits of short and catchy Git URLs.
 <br><br>
 
+> Note: This script utilises [Git.io][gitio] for URL shortening. Please be advised that as of January 2022, Git.io is has announced that it is no longer accepting new links for shortening. Existing shortened links will remain operational.
+
+<br>
+
 ## Getting Started
 
 Download the repository via curl:
 
 ```shell
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/nicolodiamante/gitio/HEAD/bootstrap.sh)"
+zsh -c "$(curl -fsSL https://raw.githubusercontent.com/nicolodiamante/gitio/HEAD/bootstrap.zsh)"
 ```
 
 Alternatively, you can clone the repository manually:
@@ -22,10 +26,10 @@ Alternatively, you can clone the repository manually:
 git clone https://github.com/nicolodiamante/gitio.git ~/gitio
 ```
 
-Once you have downloaded the repository, you can navigate into its directory in the terminal and paste the following code:
+Once you have downloaded the repository, navigate to the root directory of the repository, and then execute the installation script using the following command:
 
 ```shell
-cd utils && source install.sh
+source utils/install.sh
 ```
 
 The script is designed to search for the zshrc file and append the complete path to the gitio/script directory to the fpath variable. By doing this, the script ensures that the script directory is added to the list of paths that Zsh searches for when looking for executable scripts.
@@ -45,7 +49,7 @@ git clone https://github.com/nicolodiamante/gitio.git $ZSH_CUSTOM/plugins/gitio
 
 - Add to your zshrc plugins array `plugins=(... gitio)`
 - Restart the shell to activate
-<br><br>
+  <br><br>
 
 ## How to use gitio
 
@@ -80,9 +84,9 @@ Any suggestions or feedback you may have for improvement are welcome. If you enc
 </p>
 
 <p align="center">
-  <picture>
-    <img src="https://github.com/nicolodiamante/gitio/assets/48920263/c83cf018-57af-4ef8-a99a-517425445425" draggable="false" ondragstart="return false;" alt="Nicol&#242; Diamante" title="Nicol&#242; Diamante" width="17px" />
-  </picture>
+  <a href="https://nicolodiamante.com" target="_blank">
+    <img src="https://github.com/nicolodiamante/gitio/assets/48920263/c83cf018-57af-4ef8-a99a-517425445425" draggable="false" ondragstart="return false;" alt="Nicol&#242; Diamante Portfolio" title="Nicol&#242; Diamante" width="17px" />
+  </a>
 </p>
 
 <p align="center">
@@ -93,6 +97,7 @@ Any suggestions or feedback you may have for improvement are welcome. If you enc
 </p>
 
 <!-- Link labels: -->
+
 [gitio]: https://git.io
 [ohmyzsh]: https://github.com/robbyrussell/oh-my-zsh/
 [git-blog]: https://github.blog/2011-11-10-git-io-github-url-shortener/

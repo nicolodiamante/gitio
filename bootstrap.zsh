@@ -15,7 +15,7 @@ SOURCE="https://github.com/nicolodiamante/gitio"
 TARBALL="${SOURCE}/tarball/master"
 TARGET="${HOME}/gitio"
 TAR_CMD="tar -xzv -C \"${TARGET}\" --strip-components 1 --exclude .gitignore"
-INSTALL=./utils/install.sh
+INSTALL="${TARGET}/utils/install.zsh"
 
 # Check if a command is executable.
 is_executable() {
