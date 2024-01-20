@@ -8,7 +8,7 @@
 Git URLs can become cumbersome due to the long file names, leading to lengthy and often messy URLs that can be difficult to read. This can be particularly problematic when sharing URLs via email or social media. To address this issue, this plugin has been developed to use curl to shorten URLs, inspired by a similar service offered by GitHub called [Git.io][gitio]. The use of shortened URLs can not only improve readability but also make sharing URLs more convenient and efficient. This plugin allows users to enjoy the benefits of short and catchy Git URLs.
 <br><br>
 
-> Note: This script utilises [Git.io][gitio] for URL shortening. Please be advised that as of January 2022, Git.io is has announced that it is no longer accepting new links for shortening. Existing shortened links will remain operational.
+> Note: This script utilises Git.io for URL shortening. Please be advised that as of January 2022, Git.io has announced that it is no longer accepting new links for shortening. Any links already shortened via Git.io will continue to operate as usual and stay accessible.
 
 <br>
 
